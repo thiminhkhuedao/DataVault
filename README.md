@@ -93,5 +93,3 @@ working prototype of that provenance layer.
 
 ---
 
-*Built as a passion project exploring AI data infrastructure.*
-*No libraries required beyond Python's standard library.*
