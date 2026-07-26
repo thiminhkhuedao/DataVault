@@ -1,0 +1,54 @@
+{
+  "headers": [
+    "id",
+    "label",
+    "confidence"
+  ],
+  "rows": {
+    "55604c0759acb359": {
+      "position": 0,
+      "data": {
+        "id": "1",
+        "label": "negative",
+        "confidence": "0.92"
+      },
+      "hash": "55604c0759acb359"
+    },
+    "a4b5c55ff474c0a2": {
+      "position": 1,
+      "data": {
+        "id": "2",
+        "label": "positive",
+        "confidence": "0.87"
+      },
+      "hash": "a4b5c55ff474c0a2"
+    },
+    "857d1353d2409738": {
+      "position": 2,
+      "data": {
+        "id": "3",
+        "label": "negative",
+        "confidence": "0.95"
+      },
+      "hash": "857d1353d2409738"
+    },
+    "b26d26aef6323e4b": {
+      "position": 3,
+      "data": {
+        "id": "4",
+        "label": "positive",
+        "confidence": "0.78"
+      },
+      "hash": "b26d26aef6323e4b"
+    },
+    "738606a48411d9e9": {
+      "position": 4,
+      "data": {
+        "id": "5",
+        "label": "positive",
+        "confidence": "0.91"
+      },
+      "hash": "738606a48411d9e9"
+    }
+  }
+}

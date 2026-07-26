@@ -1,0 +1,68 @@
+{
+  "files": {
+    "training_data.csv": {
+      "versions": [
+        {
+          "version_id": "v1",
+          "hash": "542c990c4b807b814fbc5bf5ca54316d43a00d7c1a14f20b03fb4a9ef52f913b",
+          "message": "\"raw training data \u00e2\u20ac\u201d 6 samples\"",
+          "timestamp": "2026-07-25T10:27:34.681981",
+          "author": "nguye",
+          "size_bytes": 105,
+          "chain_hash": "0f1102bb005b0a7bb5ce2a235db57258021bf690bdec5206438221461ab3b4f4",
+          "prev_chain_hash": "GENESIS"
+        },
+        {
+          "version_id": "v2",
+          "hash": "992a4d60a816bfed49ad26510efc4f3c65422a000217692c399f1d24eba93583",
+          "message": "\"added 2 new samples, total now 8\"",
+          "timestamp": "2026-07-25T10:27:35.781064",
+          "author": "nguye",
+          "size_bytes": 133,
+          "prev_hash": "542c990c4b807b814fbc5bf5ca54316d43a00d7c1a14f20b03fb4a9ef52f913b",
+          "tags": [
+            {
+              "message": "used for GPT training run #1",
+              "tagged_at": "2026-07-25T10:36:18.381426",
+              "tagged_by": "nguye"
+            }
+          ],
+          "chain_hash": "f028299bb84c6c46e888cb1ee61a97367bc0e3a769fd45292d61bbbb642994f2",
+          "prev_chain_hash": "0f1102bb005b0a7bb5ce2a235db57258021bf690bdec5206438221461ab3b4f4"
+        },
+        {
+          "version_id": "v3",
+          "hash": "ed8df23fb103598572774c4f7500fb7e93bbaa3f734daae9e8e1adc6b1ef72d5",
+          "message": "\"added 2 more samples \u00e2\u20ac\u201d dataset now 10 rows\"",
+          "timestamp": "2026-07-25T10:27:36.016967",
+          "author": "nguye",
+          "size_bytes": 162,
+          "prev_hash": "992a4d60a816bfed49ad26510efc4f3c65422a000217692c399f1d24eba93583",
+          "tags": [
+            {
+              "message": "final approved dataset",
+              "tagged_at": "2026-07-25T10:36:18.591211",
+              "tagged_by": "nguye"
+            }
+          ],
+          "chain_hash": "92c73a2b5856db681772e775d9aaf555cc4187080c48e15ada75bef7cc8c11d2",
+          "prev_chain_hash": "f028299bb84c6c46e888cb1ee61a97367bc0e3a769fd45292d61bbbb642994f2"
+        }
+      ]
+    },
+    "labels.csv": {
+      "versions": [
+        {
+          "version_id": "v1",
+          "hash": "d20c1b9ef0710977859cbb5fa06315f898550b7939f28ebd55920e6f8189248b",
+          "message": "\"initial label set from annotation team\"",
+          "timestamp": "2026-07-25T10:27:34.987284",
+          "author": "nguye",
+          "size_bytes": 106,
+          "chain_hash": "b9cd2638ef3eee8a02a5c84d3d48b3772051d9136d6178c417581870185f0e84",
+          "prev_chain_hash": "GENESIS"
+        }
+      ]
+    }
+  }
+}
