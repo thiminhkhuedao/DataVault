@@ -1,0 +1,3 @@
+# DataVault has zero required dependencies — Python stdlib only
+# Optional: for the dashboard
+# (no pip install needed)
