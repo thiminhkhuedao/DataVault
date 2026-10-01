@@ -391,14 +391,6 @@ def list_tags(filepath):
     return True, "\n".join(lines)
 
 
-def save_record(record):
-    db = _read_db()
-    clean = json.loads(json.dumps(record, default=lambda o: bool(o) if hasattr(o, '__bool__') else str(o)))
-    db["captures"].append(clean)
-    db["total"] = len(db["captures"])
-    _write_db(db)
-
-
 def _check_initialized():
     if not os.path.exists(VAULT_DIR):
         raise SystemExit("No DataVault project found. Run 'datavault init <name>' first.")
