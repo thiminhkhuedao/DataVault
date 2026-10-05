@@ -14,7 +14,7 @@ def compute_chain_hash(file_hash, prev_chain_hash, version_id, timestamp, author
 def build_chain(filename):
     if not os.path.exists(HISTORY_FILE):
         return False, "No DataVault project found."
-    with open(HISTORY_FILE, "r") as f:
+    with open(HISTORY_FILE, "r", encoding="utf-8") as f:
         history = json.load(f)
     if filename not in history.get("files", {}):
         return False, f"'{filename}' is not tracked."
@@ -41,7 +41,7 @@ def build_chain(filename):
         v["prev_chain_hash"] = prev_chain_hash
         prev_chain_hash      = chain_hash
 
-    with open(HISTORY_FILE, "w") as f:
+    with open(HISTORY_FILE, "w", encoding="utf-8") as f:
         json.dump(history, f, indent=2)
 
     chain_data = _load_chain()
@@ -53,7 +53,7 @@ def build_chain(filename):
 def verify_chain(filename):
     if not os.path.exists(HISTORY_FILE):
         return False, "No DataVault project found."
-    with open(HISTORY_FILE, "r") as f:
+    with open(HISTORY_FILE, "r", encoding="utf-8") as f:
         history = json.load(f)
     if filename not in history.get("files", {}):
         return False, f"'{filename}' is not tracked."
@@ -131,7 +131,7 @@ def format_chain_verification(filename, results):
 def display_chain(filename):
     if not os.path.exists(HISTORY_FILE):
         return False, "No DataVault project found."
-    with open(HISTORY_FILE, "r") as f:
+    with open(HISTORY_FILE, "r", encoding="utf-8") as f:
         history = json.load(f)
     if filename not in history.get("files", {}):
         return False, f"'{filename}' is not tracked."
@@ -163,11 +163,11 @@ def display_chain(filename):
 
 def _load_chain():
     if os.path.exists(CHAIN_FILE):
-        with open(CHAIN_FILE, "r") as f:
+        with open(CHAIN_FILE, "r", encoding="utf-8") as f:
             return json.load(f)
     return {"files": {}}
 
 
 def _save_chain(data):
-    with open(CHAIN_FILE, "w") as f:
+    with open(CHAIN_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
