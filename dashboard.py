@@ -16,9 +16,9 @@ def build_dashboard_html():
     if not os.path.exists(HISTORY_FILE):
         return _error_page("No DataVault project found. Run 'python datavault.py init <name>' first.")
 
-    with open(HISTORY_FILE, "r") as f:
+    with open(HISTORY_FILE, "r", encoding="utf-8") as f:
         history = json.load(f)
-    with open(META_FILE, "r") as f:
+    with open(META_FILE, "r", encoding="utf-8") as f:
         meta = json.load(f)
 
     proj_name  = meta.get("project_name", "DataVault Project")
