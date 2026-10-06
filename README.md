@@ -8,6 +8,10 @@ Zero dependencies. Pure Python stdlib.
 
 ---
 
+pip install datavault-cli
+
+---
+
 ## Why not Git or DVC?
 
 | | Git | DVC | DataVault |
@@ -33,7 +37,6 @@ cd DataVault
 python test_datavault.py
 ```
 
-That's it. No pip install, no config, no database. Just Python 3.6+.
 
 ---
 
