@@ -146,6 +146,9 @@ DataVault is a working prototype of that provenance layer.
 
 ---
 
-## License
+## Copyright
 
-MIT
+Copyright © 2026 Ry Nguyen. All rights reserved.
+
+This project and its source code are public for portfolio viewing purposes only.
+No permission is granted to copy, distribute, modify, or use this code for any other purpose.
