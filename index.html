@@ -257,7 +257,7 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:56px 0}
       <span>Python 3.6+</span>
       <span>Zero dependencies</span>
       <span>pip install datavault-cli</span>
-      <span>MIT — coming soon</span>
+      <span>All rights reserved</span>
     </div>
   </div>
 
@@ -288,8 +288,9 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:56px 0}
 <br>
 <div><span class="t-prompt">$ </span><span class="t-cmd">python datavault.py chain training.csv</span></div>
 <div><span class="t-ok">CHAIN INTACT</span> <span class="t-dim">— 3 versions verified. History unmodified.</span></div>
-<div><span class="t-prompt">$ </span><span class="t-cmd">python datavault.py export</span></div>
-<div><span class="t-ok">+</span> <span class="t-dim">Provenance report exported — ready for audit</span></div>
+<div><span class="t-prompt">$ </span><span class="t-cmd">python datavault.py audit training.csv</span></div>
+<div><span class="t-ok">AUDIT PASSED</span> <span class="t-dim">— chain intact · file intact · approved</span></div>
+<div><span class="t-dim">&nbsp; Report exported — ready for regulators</span></div>
       </div>
     </div>
   </div>
@@ -299,7 +300,7 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:56px 0}
       <div class="card"><h4>EU AI Act compliance</h4><p>Directly addresses Articles 10, 12, and 13 — data governance, record-keeping, and transparency requirements for high-risk AI systems.</p></div>
       <div class="card"><h4>Cryptographic proof</h4><p>SHA-256 hashing and hash chains provide mathematical proof of integrity — not just version tracking, but tamper-evident history.</p></div>
       <div class="card"><h4>Zero setup</h4><p>Clone and run. No pip install required, no database, no external service. Pure Python standard library. Works in any environment.</p></div>
-      <div class="card"><h4>Audit-ready</h4><p>Export a complete provenance report — version history, signatures, hash chain — formatted for regulators and auditors.</p></div>
+      <div class="card"><h4>Audit report</h4><p>One command generates a complete EU AI Act audit report — chain verification, signature status, file integrity — formatted for regulators. Open in browser, print as PDF.</p></div>
     </div>
   </div>
 
@@ -630,6 +631,7 @@ python datavault.py dashboard</div>
           <tr><td class="cmd-name">approve &lt;file&gt; v</td><td>Check if a version has all required approvals</td></tr>
           <tr><td class="cmd-name">tag &lt;file&gt; v "label"</td><td>Attach a label to a specific version</td></tr>
           <tr><td class="cmd-name">export</td><td>Export full history as HTML provenance report</td></tr>
+          <tr><td class="cmd-name">audit &lt;file&gt;</td><td>Generate a full EU AI Act audit report (chain + signatures + file status)</td></tr>
           <tr><td class="cmd-name">dashboard</td><td>Open local web dashboard on port 5000</td></tr>
           <tr><td class="cmd-name">migrate</td><td>Backfill snapshots for pre-existing versions</td></tr>
         </tbody>
