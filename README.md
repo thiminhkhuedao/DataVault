@@ -78,6 +78,9 @@ python datavault.py chain training_data.csv
 # See exactly which rows changed between versions (CSV only)
 python datavault.py rowdiff training_data.csv v1 v3
 
+# Generate a full EU AI Act audit report
+python datavault.py audit training_data.csv
+
 # Export a provenance report
 python datavault.py export
 
@@ -108,6 +111,7 @@ python datavault.py dashboard
 | `signatures <file>` | List or verify signatures |
 | `approve <file> v` | Check approval status |
 | `tag <file> v "label"` | Label a version |
+| `audit <file>` | Generate EU AI Act audit report (chain + signatures + file status) |
 | `export` | Export HTML/PDF provenance report |
 | `dashboard` | Open local web dashboard |
 
@@ -136,6 +140,7 @@ python datavault.py dashboard
 | `signing.py` | Multi-user signing and approval |
 | `dashboard.py` | Local web dashboard (port 5000) |
 | `pi_bridge.py` | Auto-commit sensor data from Raspberry Pi cluster |
+| `audit.py` | EU AI Act audit report generator |
 | `migrate.py` | Backfill snapshots for existing versions |
 | `test_datavault.py` | Full demo — run this first |
 
@@ -144,6 +149,8 @@ python datavault.py dashboard
 ## EU AI Act relevance
 
 DataVault directly supports compliance with:
+
+The `audit` command runs all checks at once — chain integrity, file tamper detection, and signature verification — and generates an HTML report citing the relevant EU AI Act articles. Open in browser and print as PDF to share with auditors.
 
 - **Article 10** — data governance and management practices for high-risk AI systems
 - **Article 12** — record-keeping and logging requirements
@@ -156,7 +163,6 @@ DataVault is not a legal compliance tool and does not guarantee regulatory compl
 ## Requirements
 
 - Python 3.6+
-- Zero external dependencies 
 
 ---
 
