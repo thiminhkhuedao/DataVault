@@ -206,6 +206,11 @@ def main():
         import dashboard as db_module
         db_module.main()
 
+    elif command == "diff" and len(args) > 4 and args[4] == "--semantic":
+        import semantic_diff as sd
+        success, result = sd.semantic_diff(args[1], args[2], args[3])
+        print(result) if success else err(result)    
+
     else:
         err(f"Unknown command: '{command}'")
         info("Run 'python datavault.py help' to see all commands")
