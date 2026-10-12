@@ -206,10 +206,16 @@ def main():
         import dashboard as db_module
         db_module.main()
 
-    elif command == "diff" and len(args) > 4 and args[4] == "--semantic":
-        import semantic_diff as sd
-        success, result = sd.semantic_diff(args[1], args[2], args[3])
-        print(result) if success else err(result)    
+    elif command == "diff":
+        if len(args) < 4:
+            err("Usage: python datavault.py diff <file> <v1> <v2> [--semantic]"); return
+        if "--semantic" in args:
+            import semantic_diff as sd
+            success, result = sd.semantic_diff(args[1], args[2], args[3])
+            print(result) if success else err(result)
+        else:
+            success, result = core.diff_versions(args[1], args[2], args[3])
+            print(result) if success else err(result)   
 
     else:
         err(f"Unknown command: '{command}'")
