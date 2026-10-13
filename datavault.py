@@ -119,12 +119,6 @@ def main():
         success, result = core.checkout_version(args[1], args[2])
         ok(result) if success else err(result)
 
-    elif command == "diff":
-        if len(args) < 4:
-            err("Usage: python datavault.py diff <file> <v1> <v2>"); return
-        success, result = core.diff_versions(args[1], args[2], args[3])
-        print(result) if success else err(result)
-
     elif command == "rowlog":
         if len(args) < 2:
             err("Usage: python datavault.py rowlog <file>"); return
@@ -209,13 +203,15 @@ def main():
     elif command == "diff":
         if len(args) < 4:
             err("Usage: python datavault.py diff <file> <v1> <v2> [--semantic]"); return
+            print(f"DEBUG args: {args}")
+            print(f"DEBUG --semantic in args: {'--semantic' in args}")
         if "--semantic" in args:
             import semantic_diff as sd
             success, result = sd.semantic_diff(args[1], args[2], args[3])
             print(result) if success else err(result)
         else:
             success, result = core.diff_versions(args[1], args[2], args[3])
-            print(result) if success else err(result)   
+            print(result) if success else err(result)
 
     else:
         err(f"Unknown command: '{command}'")
