@@ -213,6 +213,27 @@ def main():
             success, result = core.diff_versions(args[1], args[2], args[3])
             print(result) if success else err(result)
 
+    elif command == "freeze":
+        import freeze as freeze_module
+        if len(args) < 3:
+            err('Usage: python datavault.py freeze <file> <version> ["reason"]'); return
+        reason = " ".join(args[3:]) if len(args) > 3 else ""
+        success, result = freeze_module.freeze_version(args[1], args[2], reason)
+        ok(result) if success else err(result)
+
+    elif command == "unfreeze":
+        import freeze as freeze_module
+        if len(args) < 3:
+            err('Usage: python datavault.py unfreeze <file> <version> ["reason"]'); return
+        reason = " ".join(args[3:]) if len(args) > 3 else ""
+        success, result = freeze_module.unfreeze_version(args[1], args[2], reason)
+        ok(result) if success else err(result)
+
+    elif command == "frozen":
+        import freeze as freeze_module
+        success, result = freeze_module.list_frozen()
+        print(result) if success else err(result)
+
     else:
         err(f"Unknown command: '{command}'")
         info("Run 'python datavault.py help' to see all commands")

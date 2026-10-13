@@ -72,6 +72,17 @@ def add_file(filepath, message):
 
 def commit_file(filepath, message):
     _check_initialized()
+    import freeze as freeze_module
+    fname = os.path.basename(filepath)
+    with open(HISTORY_FILE, "r", encoding="utf-8") as f:
+        hist = json.load(f)
+    if fname in hist.get("files", {}):
+        latest_vid = hist["files"][fname]["versions"][-1]["version_id"]
+        if freeze_module.is_frozen(fname, latest_vid):
+            return False, (
+                f"'{fname}' {latest_vid} is frozen and cannot be modified.\n"
+                f"  Run: python datavault.py unfreeze {filepath} {latest_vid}"
+        )
     if not os.path.exists(filepath):
         return False, f"File not found: {filepath}"
     history  = _read_history()
