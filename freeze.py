@@ -102,14 +102,24 @@ def list_frozen():
     if not frozen:
         return True, "No frozen versions."
 
+    SIGNING_FILE = ".datavault/signatures.json"
+    all_sigs = {}
+    if os.path.exists(SIGNING_FILE):
+        with open(SIGNING_FILE, "r", encoding="utf-8") as f:
+            all_sigs = json.load(f)
+
     lines = ["\nFrozen versions:\n" + "─" * 55]
     for key, entry in frozen.items():
-        f_at = entry["frozen_at"][:19].replace("T", " ")
+        f_at         = entry["frozen_at"][:19].replace("T", " ")
+        version_sigs = all_sigs.get(entry["filename"], {}).get(entry["version_id"], [])
+        owners       = [s["signer"] for s in version_sigs if s["role"] == "owner"]
+        owner_str    = ", ".join(owners) if owners else "none — unfreeze blocked"
         lines.append(
             f"\n  {entry['filename']} {entry['version_id']}\n"
             f"  Frozen by: {entry['frozen_by']} on {f_at}\n"
             f"  Reason:    {entry.get('reason', '—')}\n"
-            f"  Hash:      {entry['file_hash'][:24]}..."
+            f"  Hash:      {entry['file_hash'][:24]}...\n"
+            f"  Owners:    {owner_str}"
         )
     lines.append(f"\n{'─' * 55}")
     lines.append(f"  {len(frozen)} frozen version(s)")

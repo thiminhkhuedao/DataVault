@@ -224,9 +224,16 @@ def main():
     elif command == "unfreeze":
         import freeze as freeze_module
         if len(args) < 3:
-            err('Usage: python datavault.py unfreeze <file> <version> ["reason"]'); return
-        reason = " ".join(args[3:]) if len(args) > 3 else ""
-        success, result = freeze_module.unfreeze_version(args[1], args[2], reason)
+            err('Usage: python datavault.py unfreeze <file> <version> [--by <name>] ["reason"]'); return
+        requester = None
+        reason    = ""
+        i = 3
+        while i < len(args):
+            if args[i] == "--by" and i+1 < len(args):
+                requester = args[i+1]; i += 2
+            else:
+                reason = " ".join(args[3:]); break
+        success, result = freeze_module.unfreeze_version(args[1], args[2], reason, requester)
         ok(result) if success else err(result)
 
     elif command == "frozen":
