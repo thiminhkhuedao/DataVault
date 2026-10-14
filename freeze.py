@@ -4,6 +4,7 @@ from datetime import datetime
 
 HISTORY_FILE = ".datavault/history.json"
 FREEZE_FILE  = ".datavault/frozen.json"
+SIGNING_FILE = ".datavault/signatures.json"
 
 
 def freeze_version(filepath, version_id, reason=""):
@@ -25,7 +26,6 @@ def freeze_version(filepath, version_id, reason=""):
         available = ", ".join(v["version_id"] for v in versions)
         return False, f"Version '{version_id}' not found. Available: {available}"
 
-    # Check already frozen
     frozen = _load_frozen()
     key    = f"{filename}__{version_id}"
 
@@ -60,11 +60,12 @@ def freeze_version(filepath, version_id, reason=""):
         f"  Hash:   {target['hash'][:32]}...\n"
         f"  Reason: {reason or 'No reason provided'}\n\n"
         f"  This version is now locked. No further commits can be made\n"
-        f"  to '{filename}' without unfreezing first."
+        f"  to '{filename}' without unfreezing first.\n"
+        f"  To unfreeze: sign as owner first, then run unfreeze."
     )
 
 
-def unfreeze_version(filepath, version_id, reason=""):
+def unfreeze_version(filepath, version_id, reason="", requester=None):
     filename = os.path.basename(filepath)
     frozen   = _load_frozen()
     key      = f"{filename}__{version_id}"
@@ -72,11 +73,41 @@ def unfreeze_version(filepath, version_id, reason=""):
     if key not in frozen:
         return False, f"'{filename}' {version_id} is not frozen."
 
+    # Require owner signature
+    if os.path.exists(SIGNING_FILE):
+        with open(SIGNING_FILE, "r", encoding="utf-8") as f:
+            sigs = json.load(f)
+        version_sigs = sigs.get(filename, {}).get(version_id, [])
+        owners = [s["signer"] for s in version_sigs if s["role"] == "owner"]
+
+        if not owners:
+            return False, (
+                f"Cannot unfreeze — no owner signature on {version_id}.\n"
+                f"  Sign as owner first:\n"
+                f"  python datavault.py sign {filepath} {version_id} <name> owner"
+            )
+
+        if requester and requester not in owners:
+            return False, (
+                f"Cannot unfreeze — '{requester}' is not an owner of {version_id}.\n"
+                f"  Current owners: {', '.join(owners)}\n"
+                f"  Only an owner can unfreeze."
+            )
+
+        unfreeze_by = requester or owners[0]
+    else:
+        return False, (
+            f"Cannot unfreeze — no signatures found for {version_id}.\n"
+            f"  Sign as owner first:\n"
+            f"  python datavault.py sign {filepath} {version_id} <name> owner"
+        )
+
     entry = frozen.pop(key)
     _save_frozen(frozen)
 
     return True, (
         f"Unfrozen '{filename}' {version_id}\n"
+        f"  Authorized by:    {unfreeze_by} (owner)\n"
         f"  Originally frozen by: {entry['frozen_by']} "
         f"on {entry['frozen_at'][:19].replace('T', ' ')}\n"
         f"  Unfreeze reason: {reason or 'No reason provided'}\n\n"
@@ -86,12 +117,9 @@ def unfreeze_version(filepath, version_id, reason=""):
 
 def check_frozen(filename, version_id=None):
     frozen = _load_frozen()
-
     if version_id:
         key = f"{filename}__{version_id}"
         return key in frozen, frozen.get(key)
-
-    # Check if any version of this file is frozen
     file_frozen = {k: v for k, v in frozen.items() if v["filename"] == filename}
     return len(file_frozen) > 0, file_frozen
 
@@ -102,7 +130,6 @@ def list_frozen():
     if not frozen:
         return True, "No frozen versions."
 
-    SIGNING_FILE = ".datavault/signatures.json"
     all_sigs = {}
     if os.path.exists(SIGNING_FILE):
         with open(SIGNING_FILE, "r", encoding="utf-8") as f:
