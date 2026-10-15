@@ -221,25 +221,37 @@ def main():
         success, result = freeze_module.freeze_version(args[1], args[2], reason)
         ok(result) if success else err(result)
 
+    elif command == "freeze":
+        import freeze as freeze_module
+        if len(args) < 3:
+            err('Usage: python datavault.py freeze <file> <version> ["reason"] [--method password|signature]'); return
+        method = "password"
+        reason_parts = []
+        i = 3
+        while i < len(args):
+            if args[i] == "--method" and i+1 < len(args):
+                method = args[i+1]; i += 2
+            else:
+                reason_parts.append(args[i]); i += 1
+        reason = " ".join(reason_parts)
+        success, result = freeze_module.freeze_version(args[1], args[2], reason, method)
+        ok(result) if success else err(result)
+
     elif command == "unfreeze":
         import freeze as freeze_module
         if len(args) < 3:
             err('Usage: python datavault.py unfreeze <file> <version> [--by <name>] ["reason"]'); return
         requester = None
-        reason    = ""
+        reason_parts = []
         i = 3
         while i < len(args):
             if args[i] == "--by" and i+1 < len(args):
                 requester = args[i+1]; i += 2
             else:
-                reason = " ".join(args[3:]); break
+                reason_parts.append(args[i]); i += 1
+        reason = " ".join(reason_parts)
         success, result = freeze_module.unfreeze_version(args[1], args[2], reason, requester)
         ok(result) if success else err(result)
-
-    elif command == "frozen":
-        import freeze as freeze_module
-        success, result = freeze_module.list_frozen()
-        print(result) if success else err(result)
 
     else:
         err(f"Unknown command: '{command}'")

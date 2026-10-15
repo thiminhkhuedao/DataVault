@@ -1,5 +1,7 @@
 import json
 import os
+import hashlib
+import getpass
 from datetime import datetime
 
 HISTORY_FILE = ".datavault/history.json"
@@ -7,7 +9,7 @@ FREEZE_FILE  = ".datavault/frozen.json"
 SIGNING_FILE = ".datavault/signatures.json"
 
 
-def freeze_version(filepath, version_id, reason=""):
+def freeze_version(filepath, version_id, reason="", method="password"):
     filename = os.path.basename(filepath)
 
     if not os.path.exists(HISTORY_FILE):
@@ -35,33 +37,53 @@ def freeze_version(filepath, version_id, reason=""):
         return False, (
             f"'{filename}' {version_id} is already frozen.\n"
             f"  Frozen by: {f_by} on {f_at}\n"
-            f"  Reason: {frozen[key].get('reason', '—')}\n\n"
-            f"  Use 'datavault unfreeze {filepath} {version_id}' to unfreeze."
+            f"  Reason: {frozen[key].get('reason', '—')}"
         )
 
     frozen_at = datetime.now().isoformat()
     frozen_by = os.getenv("USERNAME") or os.getenv("USER") or "unknown"
 
-    frozen[key] = {
+    entry = {
         "filename":   filename,
         "version_id": version_id,
         "file_hash":  target["hash"],
         "frozen_at":  frozen_at,
         "frozen_by":  frozen_by,
-        "reason":     reason or "No reason provided"
+        "reason":     reason or "No reason provided",
+        "method":     method,
     }
 
+    if method == "password":
+        print(f"\n  Set a passphrase to protect this freeze.")
+        print(f"  Without it, nobody can unfreeze '{filename}' {version_id}.\n")
+        pw1 = getpass.getpass("  Passphrase: ")
+        pw2 = getpass.getpass("  Confirm:    ")
+        if pw1 != pw2:
+            return False, "Passphrases do not match. Freeze cancelled."
+        if len(pw1) < 4:
+            return False, "Passphrase too short (minimum 4 characters). Freeze cancelled."
+        salt    = os.urandom(32).hex()
+        pw_hash = hashlib.pbkdf2_hmac("sha256", pw1.encode(), salt.encode(), 200_000).hex()
+        entry["pw_hash"] = pw_hash
+        entry["pw_salt"] = salt
+        method_note = "Protected by passphrase (PBKDF2-SHA256)"
+
+    elif method == "signature":
+        method_note = "Protected by owner signature"
+    else:
+        return False, f"Unknown method '{method}'. Use 'password' or 'signature'."
+
+    frozen[key] = entry
     _save_frozen(frozen)
 
     return True, (
         f"Frozen '{filename}' {version_id}\n"
-        f"  By:     {frozen_by}\n"
-        f"  At:     {frozen_at[:19].replace('T', ' ')}\n"
-        f"  Hash:   {target['hash'][:32]}...\n"
-        f"  Reason: {reason or 'No reason provided'}\n\n"
-        f"  This version is now locked. No further commits can be made\n"
-        f"  to '{filename}' without unfreezing first.\n"
-        f"  To unfreeze: sign as owner first, then run unfreeze."
+        f"  By:       {frozen_by}\n"
+        f"  At:       {frozen_at[:19].replace('T', ' ')}\n"
+        f"  Hash:     {target['hash'][:32]}...\n"
+        f"  Reason:   {reason or 'No reason provided'}\n"
+        f"  Security: {method_note}\n\n"
+        f"  This version is now locked."
     )
 
 
@@ -73,8 +95,28 @@ def unfreeze_version(filepath, version_id, reason="", requester=None):
     if key not in frozen:
         return False, f"'{filename}' {version_id} is not frozen."
 
-    # Require owner signature
-    if os.path.exists(SIGNING_FILE):
+    entry  = frozen[key]
+    method = entry.get("method", "password")
+
+    if method == "password":
+        if "pw_hash" not in entry:
+            return False, "Freeze record is missing password hash. Cannot unfreeze safely."
+        print(f"\n  '{filename}' {version_id} is frozen with a passphrase.\n")
+        pw = getpass.getpass("  Passphrase: ")
+        pw_hash = hashlib.pbkdf2_hmac(
+            "sha256", pw.encode(), entry["pw_salt"].encode(), 200_000
+        ).hex()
+        if pw_hash != entry["pw_hash"]:
+            return False, "Incorrect passphrase. Unfreeze denied."
+        unfreeze_by = os.getenv("USERNAME") or os.getenv("USER") or "unknown"
+
+    elif method == "signature":
+        if not os.path.exists(SIGNING_FILE):
+            return False, (
+                f"No signatures found for {version_id}.\n"
+                f"  Sign as owner first:\n"
+                f"  python datavault.py sign {filepath} {version_id} <name> owner"
+            )
         with open(SIGNING_FILE, "r", encoding="utf-8") as f:
             sigs = json.load(f)
         version_sigs = sigs.get(filename, {}).get(version_id, [])
@@ -86,31 +128,24 @@ def unfreeze_version(filepath, version_id, reason="", requester=None):
                 f"  Sign as owner first:\n"
                 f"  python datavault.py sign {filepath} {version_id} <name> owner"
             )
-
         if requester and requester not in owners:
             return False, (
                 f"Cannot unfreeze — '{requester}' is not an owner of {version_id}.\n"
-                f"  Current owners: {', '.join(owners)}\n"
-                f"  Only an owner can unfreeze."
+                f"  Current owners: {', '.join(owners)}"
             )
-
         unfreeze_by = requester or owners[0]
     else:
-        return False, (
-            f"Cannot unfreeze — no signatures found for {version_id}.\n"
-            f"  Sign as owner first:\n"
-            f"  python datavault.py sign {filepath} {version_id} <name> owner"
-        )
+        return False, f"Unknown freeze method '{method}'."
 
-    entry = frozen.pop(key)
+    frozen.pop(key)
     _save_frozen(frozen)
 
     return True, (
         f"Unfrozen '{filename}' {version_id}\n"
-        f"  Authorized by:    {unfreeze_by} (owner)\n"
+        f"  Authorized by:    {unfreeze_by}\n"
         f"  Originally frozen by: {entry['frozen_by']} "
         f"on {entry['frozen_at'][:19].replace('T', ' ')}\n"
-        f"  Unfreeze reason: {reason or 'No reason provided'}\n\n"
+        f"  Reason: {reason or 'No reason provided'}\n\n"
         f"  You can now commit new versions of '{filename}'."
     )
 
@@ -126,7 +161,6 @@ def check_frozen(filename, version_id=None):
 
 def list_frozen():
     frozen = _load_frozen()
-
     if not frozen:
         return True, "No frozen versions."
 
@@ -137,16 +171,20 @@ def list_frozen():
 
     lines = ["\nFrozen versions:\n" + "─" * 55]
     for key, entry in frozen.items():
-        f_at         = entry["frozen_at"][:19].replace("T", " ")
-        version_sigs = all_sigs.get(entry["filename"], {}).get(entry["version_id"], [])
-        owners       = [s["signer"] for s in version_sigs if s["role"] == "owner"]
-        owner_str    = ", ".join(owners) if owners else "none — unfreeze blocked"
+        f_at   = entry["frozen_at"][:19].replace("T", " ")
+        method = entry.get("method", "password")
+        if method == "password":
+            security = "passphrase protected"
+        else:
+            version_sigs = all_sigs.get(entry["filename"], {}).get(entry["version_id"], [])
+            owners       = [s["signer"] for s in version_sigs if s["role"] == "owner"]
+            security     = f"owner signature — {', '.join(owners) if owners else 'none (unfreeze blocked)'}"
+
         lines.append(
             f"\n  {entry['filename']} {entry['version_id']}\n"
             f"  Frozen by: {entry['frozen_by']} on {f_at}\n"
             f"  Reason:    {entry.get('reason', '—')}\n"
-            f"  Hash:      {entry['file_hash'][:24]}...\n"
-            f"  Owners:    {owner_str}"
+            f"  Security:  {security}"
         )
     lines.append(f"\n{'─' * 55}")
     lines.append(f"  {len(frozen)} frozen version(s)")
