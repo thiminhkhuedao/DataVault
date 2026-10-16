@@ -9,7 +9,7 @@ setup(
     author="Ry Nguyen",
     author_email="thiminhkhuedao@gmail.com",
     url="https://github.com/thiminhkhuedao/DataVault",
-    py_modules=["datavault","vault_core","chain","signing","row_tracker","dashboard","pi_bridge","migrate", "audit", "semantic_diff", "freeze"],
+    py_modules=["datavault","vault_core","chain","signing","row_tracker","dashboard","pi_bridge","migrate", "audit", "semantic_diff", "freeze", "lineage"],
     python_requires=">=3.6",
     entry_points={"console_scripts": ["datavault=datavault:main"]},
     classifiers=[

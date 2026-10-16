@@ -253,6 +253,25 @@ def main():
         success, result = freeze_module.unfreeze_version(args[1], args[2], reason, requester)
         ok(result) if success else err(result)
 
+    elif command == "link":
+        import lineage as lineage_module
+        if len(args) < 3:
+            err("Usage: python datavault.py link <output> <source1> [source2 ...]"); return
+        success, result = lineage_module.link_files(args[1], args[2:])
+        ok(result) if success else err(result)
+
+    elif command == "lineage":
+        import lineage as lineage_module
+        if len(args) < 2:
+            err("Usage: python datavault.py lineage <file>"); return
+        success, result = lineage_module.show_lineage(args[1])
+        print(result) if success else err(result)
+
+    elif command == "lineages":
+        import lineage as lineage_module
+        success, result = lineage_module.list_lineage()
+        print(result) if success else err(result)
+
     else:
         err(f"Unknown command: '{command}'")
         info("Run 'python datavault.py help' to see all commands")
