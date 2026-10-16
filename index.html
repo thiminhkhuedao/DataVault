@@ -413,6 +413,9 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:56px 0}
       <button class="feature-tab" onclick="showFeature('chain')">Hash chain</button>
       <button class="feature-tab" onclick="showFeature('rows')">Row diffing</button>
       <button class="feature-tab" onclick="showFeature('signing')">Signing</button>
+      <button class="feature-tab" onclick="showFeature('freeze')">Freeze</button>
+      <button class="feature-tab" onclick="showFeature('analysis')">Analysis</button>
+      <button class="feature-tab" onclick="showFeature('lineage')">Lineage</button>
       <button class="feature-tab" onclick="showFeature('dashboard')">Dashboard</button>
     </div>
 
@@ -520,6 +523,86 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:56px 0}
 <div><span class="t-dim">&nbsp; Signatures: 2</span></div>
 <br>
 <div><span class="t-ok">APPROVED</span> <span class="t-dim">— ready for AI training</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="feature-freeze" class="feature-panel">
+      <div class="feature-info">
+        <h3>Version freezing</h3>
+        <p>Lock a specific version so no further commits can be made without explicit authorization. Protected by passphrase (PBKDF2-SHA256) or owner signature.</p>
+        <ul>
+          <li>Passphrase hashed with PBKDF2-SHA256 + random salt — never stored in plain text</li>
+          <li>Two methods: password (default) or owner signature</li>
+          <li>Blocked commits show exactly which version is frozen and how to unfreeze</li>
+          <li>Full audit trail — who froze, when, with what reason</li>
+        </ul>
+      </div>
+      <div class="feature-code">
+        <div class="t-bar"><div class="t-dot" style="background:#ff5f56"></div><div class="t-dot" style="background:#febc2e"></div><div class="t-dot" style="background:#28c840"></div></div>
+        <div class="t-body" style="font-size:12px">
+<div><span class="t-prompt">$ </span><span class="t-cmd">python datavault.py freeze data.csv v3 "approved"</span></div>
+<div><span class="t-dim">&nbsp; Passphrase: ****</span></div>
+<div><span class="t-dim">&nbsp; Confirm:    ****</span></div>
+<div><span class="t-ok">+</span> <span class="t-dim">Frozen data.csv v3 — passphrase protected</span></div>
+<br>
+<div><span class="t-prompt">$ </span><span class="t-cmd">python datavault.py commit data.csv "change"</span></div>
+<div><span class="t-err">✗</span> <span class="t-dim">data.csv v3 is frozen. Unfreeze first.</span></div>
+<br>
+<div><span class="t-prompt">$ </span><span class="t-cmd">python datavault.py unfreeze data.csv v3</span></div>
+<div><span class="t-dim">&nbsp; Passphrase: ****</span></div>
+<div><span class="t-ok">+</span> <span class="t-dim">Unfrozen — authorized</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="feature-analysis" class="feature-panel">
+      <div class="feature-info">
+        <h3>Data quality analysis</h3>
+        <p>Three analysis commands that go beyond version tracking to understand what changed and whether the data is trustworthy.</p>
+        <ul>
+          <li><strong>anomaly</strong> — detects missing values, duplicates, outliers, class imbalance, constant columns</li>
+          <li><strong>diff --semantic</strong> — analyzes mean drift, distribution shifts, new categories</li>
+          <li><strong>compare --statistical</strong> — deep statistical comparison with effect size (Cohen's d) and compatibility score</li>
+        </ul>
+      </div>
+      <div class="feature-code">
+        <div class="t-bar"><div class="t-dot" style="background:#ff5f56"></div><div class="t-dot" style="background:#febc2e"></div><div class="t-dot" style="background:#28c840"></div></div>
+        <div class="t-body" style="font-size:12px">
+<div><span class="t-prompt">$ </span><span class="t-cmd">python datavault.py anomaly data.csv</span></div>
+<div><span class="t-dim">&nbsp; [HIGH  ] CLASS IMBALANCE — 'label'</span></div>
+<div><span class="t-dim">&nbsp;   Imbalance ratio: 22:1</span></div>
+<div><span class="t-dim">&nbsp;   ⚠ May bias model training</span></div>
+<br>
+<div><span class="t-prompt">$ </span><span class="t-cmd">python datavault.py compare data.csv v1 v3 --statistical</span></div>
+<div><span class="t-dim">&nbsp; income [SIGNIFICANT]</span></div>
+<div><span class="t-dim">&nbsp;   mean drift: +13.2%  effect size: 0.821 (large)</span></div>
+<div><span class="t-dim">&nbsp; COMPATIBILITY SCORE: 67%</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="feature-lineage" class="feature-panel">
+      <div class="feature-info">
+        <h3>Data lineage</h3>
+        <p>Declare where your data came from — locally or across GitHub repositories. Verify that sources haven't been modified since you used them.</p>
+        <ul>
+          <li>Local lineage — declare which files were combined to produce a dataset</li>
+          <li>Remote lineage — link to files in other GitHub repos with hash verification</li>
+          <li>Source integrity check — detects if a source has changed since the link was created</li>
+          <li>Directly supports EU AI Act Article 10 data origin requirements</li>
+        </ul>
+      </div>
+      <div class="feature-code">
+        <div class="t-bar"><div class="t-dot" style="background:#ff5f56"></div><div class="t-dot" style="background:#febc2e"></div><div class="t-dot" style="background:#28c840"></div></div>
+        <div class="t-body" style="font-size:12px">
+<div><span class="t-prompt">$ </span><span class="t-cmd">python datavault.py link-remote training.csv \</span></div>
+<div><span class="t-dim">&nbsp;   --repo https://github.com/user/medical-data \</span></div>
+<div><span class="t-dim">&nbsp;   --file raw_scans.csv</span></div>
+<div><span class="t-ok">+</span> <span class="t-dim">Linked — hash verified ✓</span></div>
+<br>
+<div><span class="t-prompt">$ </span><span class="t-cmd">python datavault.py verify-remote training.csv</span></div>
+<div><span class="t-ok">✓</span> <span class="t-dim">medical-data/raw_scans.csv — unchanged</span></div>
         </div>
       </div>
     </div>
