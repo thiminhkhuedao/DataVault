@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="datavault-cli",
-    version="1.0.0",
+    version="1.1.0",
     description="Cryptographic provenance and version control for AI training datasets",
     long_description=open("README.md", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
