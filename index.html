@@ -713,8 +713,22 @@ python datavault.py dashboard</div>
           <tr><td class="cmd-name">signatures &lt;file&gt;</td><td>List or cryptographically verify signatures</td></tr>
           <tr><td class="cmd-name">approve &lt;file&gt; v</td><td>Check if a version has all required approvals</td></tr>
           <tr><td class="cmd-name">tag &lt;file&gt; v "label"</td><td>Attach a label to a specific version</td></tr>
+          <tr><td class="cmd-name">diff &lt;file&gt; v1 v2 --semantic</td><td>Semantic diff — mean drift, class shifts, new categories</td></tr>
+          <tr><td class="cmd-name">compare &lt;file&gt; v1 v2 --statistical</td><td>Statistical comparison with effect size and compatibility score</td></tr>
+          <tr><td class="cmd-name">anomaly &lt;file&gt; [version]</td><td>Detect missing values, duplicates, outliers, class imbalance</td></tr>
+          <tr><td class="cmd-name">freeze &lt;file&gt; v ["reason"] [--method]</td><td>Lock a version — passphrase or owner signature to unfreeze</td></tr>
+          <tr><td class="cmd-name">unfreeze &lt;file&gt; v [--by name]</td><td>Unlock a frozen version</td></tr>
+          <tr><td class="cmd-name">frozen</td><td>List all frozen versions</td></tr>
+          <tr><td class="cmd-name">link &lt;output&gt; &lt;source1&gt; [source2...]</td><td>Declare local data dependencies</td></tr>
+          <tr><td class="cmd-name">lineage &lt;file&gt;</td><td>Show full upstream/downstream lineage tree</td></tr>
+          <tr><td class="cmd-name">link-remote &lt;file&gt; --repo &lt;url&gt; --file &lt;f&gt;</td><td>Link to a file in another GitHub repo with hash verification</td></tr>
+          <tr><td class="cmd-name">verify-remote &lt;file&gt;</td><td>Check if remote sources have changed</td></tr>
+          <tr><td class="cmd-name">watch &lt;file&gt; [--interval N]</td><td>Real-time monitoring — alerts on unauthorized modification</td></tr>
+          <tr><td class="cmd-name">keygen &lt;key&gt;</td><td>Create an encryption key (PBKDF2-SHA256)</td></tr>
+          <tr><td class="cmd-name">encrypt &lt;file&gt; v &lt;key&gt;</td><td>Encrypt a specific version</td></tr>
+          <tr><td class="cmd-name">decrypt &lt;file&gt; v &lt;key&gt; [output]</td><td>Decrypt a version</td></tr>
           <tr><td class="cmd-name">export</td><td>Export full history as HTML provenance report</td></tr>
-          <tr><td class="cmd-name">audit &lt;file&gt;</td><td>Generate a full EU AI Act audit report (chain + signatures + file status)</td></tr>
+          <tr><td class="cmd-name">audit &lt;file&gt;</td><td>Generate a full EU AI Act audit report</td></tr>
           <tr><td class="cmd-name">dashboard</td><td>Open local web dashboard on port 5000</td></tr>
           <tr><td class="cmd-name">migrate</td><td>Backfill snapshots for pre-existing versions</td></tr>
         </tbody>

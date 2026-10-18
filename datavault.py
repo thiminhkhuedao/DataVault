@@ -272,6 +272,14 @@ def main():
         success, result = lineage_module.list_lineage()
         print(result) if success else err(result)
 
+    elif command == "anomaly":
+        import anomaly as anomaly_module
+        if len(args) < 2:
+            err("Usage: python datavault.py anomaly <file> [version]"); return
+        version = args[2] if len(args) > 2 else None
+        success, result = anomaly_module.detect_anomalies(args[1], version)
+        print(result) if success else err(result)
+
     else:
         err(f"Unknown command: '{command}'")
         info("Run 'python datavault.py help' to see all commands")
