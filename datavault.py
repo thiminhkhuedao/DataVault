@@ -280,6 +280,15 @@ def main():
         success, result = anomaly_module.detect_anomalies(args[1], version)
         print(result) if success else err(result)
 
+    elif command == "compare":
+        import statistical_compare as sc
+        if len(args) < 4:
+            err("Usage: python datavault.py compare <file> <v1> <v2> --statistical"); return
+        if "--statistical" not in args:
+            err("Use --statistical flag. Example: python datavault.py compare data.csv v1 v2 --statistical"); return
+        success, result = sc.statistical_compare(args[1], args[2], args[3])
+        print(result) if success else err(result)
+
     else:
         err(f"Unknown command: '{command}'")
         info("Run 'python datavault.py help' to see all commands")
