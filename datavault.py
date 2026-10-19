@@ -289,6 +289,22 @@ def main():
         success, result = sc.statistical_compare(args[1], args[2], args[3])
         print(result) if success else err(result)
 
+    elif command == "watch":
+        import watch as watch_module
+        if len(args) < 2:
+            err("Usage: python datavault.py watch <file> [file2 ...] [--interval N]"); return
+        interval = 2
+        files = []
+        i = 1
+        while i < len(args):
+            if args[i] == "--interval" and i + 1 < len(args):
+                interval = int(args[i + 1])
+                i += 2
+            else:
+                files.append(args[i])
+                i += 1
+        watch_module.watch(files, interval=interval)
+
     else:
         err(f"Unknown command: '{command}'")
         info("Run 'python datavault.py help' to see all commands")
