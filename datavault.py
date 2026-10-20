@@ -305,6 +305,39 @@ def main():
                 i += 1
         watch_module.watch(files, interval=interval)
 
+    elif command == "keygen":
+        import encrypt as enc_module
+        if len(args) < 2:
+            err("Usage: python datavault.py keygen <key_name>"); return
+        import getpass
+        passphrase = getpass.getpass(f"  Passphrase for key '{args[1]}': ")
+        success, result = enc_module.generate_key(args[1], passphrase)
+        ok(result) if success else err(result)
+
+    elif command == "encrypt":
+        import encrypt as enc_module
+        if len(args) < 4:
+            err("Usage: python datavault.py encrypt <file> <version> <key>"); return
+        import getpass
+        passphrase = getpass.getpass(f"  Passphrase for key '{args[3]}': ")
+        success, result = enc_module.encrypt_version(args[1], args[2], args[3], passphrase)
+        ok(result) if success else err(result)
+
+    elif command == "decrypt":
+        import encrypt as enc_module
+        if len(args) < 4:
+            err("Usage: python datavault.py decrypt <file> <version> <key> [output]"); return
+        import getpass
+        passphrase = getpass.getpass(f"  Passphrase for key '{args[3]}': ")
+        output = args[4] if len(args) > 4 else None
+        success, result = enc_module.decrypt_version(args[1], args[2], args[3], passphrase, output)
+        ok(result) if success else err(result)
+
+    elif command == "encrypted":
+        import encrypt as enc_module
+        success, result = enc_module.list_encrypted()
+        print(result) if success else err(result)
+
     else:
         err(f"Unknown command: '{command}'")
         info("Run 'python datavault.py help' to see all commands")
