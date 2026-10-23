@@ -98,9 +98,23 @@ python datavault.py approve training_data.csv v3
 python datavault.py link training_data.csv raw_data.csv labels.csv
 
 # Declare remote lineage (from another GitHub repo)
+# Windows PowerShell — all on one line:
+python datavault.py link-remote training_data.csv --repo https://github.com/user/medical-data --file raw_scans.csv --hash abc123
+
+# Mac/Linux — line continuation works:
 python datavault.py link-remote training_data.csv \
   --repo https://github.com/user/medical-data \
-  --file raw_scans.csv
+  --file raw_scans.csv \
+  --hash abc123
+
+# Verify remote sources haven't changed
+python datavault.py verify-remote training_data.csv
+
+# Show remote sources for a file
+python datavault.py remote-lineage training_data.csv
+
+# List all remote links in the project
+python datavault.py remote-links
 
 # Watch files for unauthorized modifications in real time
 python datavault.py watch training_data.csv

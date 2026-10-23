@@ -338,6 +338,48 @@ def main():
         success, result = enc_module.list_encrypted()
         print(result) if success else err(result)
 
+    elif command == "link-remote":
+        import remote_lineage as rl
+        if len(args) < 3:
+            err("Usage: python datavault.py link-remote <file> --repo <url> --file <remote_file> [--hash <hash>]"); return
+        local_file = args[1]
+        repo_url = remote_file = declared_hash = message = ""
+        i = 2
+        while i < len(args):
+            if args[i] == "--repo" and i+1 < len(args):
+                repo_url = args[i+1]; i += 2
+            elif args[i] == "--file" and i+1 < len(args):
+                remote_file = args[i+1]; i += 2
+            elif args[i] == "--hash" and i+1 < len(args):
+                declared_hash = args[i+1]; i += 2
+            elif args[i] == "--message" and i+1 < len(args):
+                message = args[i+1]; i += 2
+            else:
+                i += 1
+        if not repo_url or not remote_file:
+            err("Missing --repo or --file argument"); return
+        success, result = rl.link_remote(local_file, repo_url, remote_file, declared_hash, message)
+        ok(result) if success else err(result)
+
+    elif command == "verify-remote":
+        import remote_lineage as rl
+        if len(args) < 2:
+            err("Usage: python datavault.py verify-remote <file>"); return
+        success, result = rl.verify_remote(args[1])
+        print(result) if success else err(result)
+
+    elif command == "remote-lineage":
+        import remote_lineage as rl
+        if len(args) < 2:
+            err("Usage: python datavault.py remote-lineage <file>"); return
+        success, result = rl.show_remote_lineage(args[1])
+        print(result) if success else err(result)
+
+    elif command == "remote-links":
+        import remote_lineage as rl
+        success, result = rl.list_all_remote()
+        print(result) if success else err(result)
+
     else:
         err(f"Unknown command: '{command}'")
         info("Run 'python datavault.py help' to see all commands")
