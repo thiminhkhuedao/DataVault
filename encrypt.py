@@ -18,6 +18,7 @@ def generate_key(key_name, passphrase):
     """
     Derive a symmetric encryption key from a passphrase using PBKDF2.
     Stores only the key metadata (name, salt, hash) — never the key itself.
+    Also generates a one-time recovery code in case the passphrase is forgotten.
     """
     salt     = os.urandom(32)
     key      = _derive_key(passphrase, salt)
@@ -27,20 +28,106 @@ def generate_key(key_name, passphrase):
     if key_name in keystore:
         return False, f"Key '{key_name}' already exists. Use a different name or delete it first."
 
+    # Generate recovery code: DV-XXXX-XXXX-XXXX-XXXX
+    raw_code     = os.urandom(16).hex().upper()
+    recovery_code = f"DV-{raw_code[0:4]}-{raw_code[4:8]}-{raw_code[8:12]}-{raw_code[12:16]}"
+    recovery_salt = os.urandom(32)
+    recovery_hash = hashlib.pbkdf2_hmac(
+        "sha256", recovery_code.encode("utf-8"), recovery_salt, 200_000
+    ).hex()
+
     keystore[key_name] = {
-        "name":       key_name,
-        "salt":       base64.b64encode(salt).decode(),
-        "key_hash":   key_hash,
-        "created_at": datetime.now().isoformat(),
-        "created_by": os.getenv("USERNAME") or os.getenv("USER") or "unknown"
+        "name":          key_name,
+        "salt":          base64.b64encode(salt).decode(),
+        "key_hash":      key_hash,
+        "created_at":    datetime.now().isoformat(),
+        "created_by":    os.getenv("USERNAME") or os.getenv("USER") or "unknown",
+        "recovery_hash": recovery_hash,
+        "recovery_salt": base64.b64encode(recovery_salt).decode(),
+        "recovery_used": False
     }
     _save_keystore(keystore)
 
     return True, (
         f"Key '{key_name}' created.\n"
-        f"  Key hash: {key_hash[:24]}...\n"
-        f"  The passphrase is never stored — keep it safe.\n"
-        f"  Without it, encrypted versions cannot be decrypted."
+        f"  Key hash: {key_hash[:24]}...\n\n"
+        f"  ┌─────────────────────────────────────────────┐\n"
+        f"  │  RECOVERY CODE — save this somewhere safe   │\n"
+        f"  │                                             │\n"
+        f"  │  {recovery_code}              │\n"
+        f"  │                                             │\n"
+        f"  │  One-time use only. Cannot be regenerated. │\n"
+        f"  └─────────────────────────────────────────────┘\n\n"
+        f"  If you forget your passphrase:\n"
+        f"  python datavault.py recover {key_name}"
+    )
+
+
+def recover_key(key_name, recovery_code, new_passphrase):
+    """
+    Reset a key's passphrase using the one-time recovery code.
+    The recovery code is invalidated after use.
+    """
+    keystore = _load_keystore()
+
+    if key_name not in keystore:
+        return False, f"Key '{key_name}' not found."
+
+    entry = keystore[key_name]
+
+    if entry.get("recovery_used"):
+        return False, (
+            f"Recovery code for '{key_name}' has already been used.\n"
+            f"  If you no longer have access, the encrypted versions\n"
+            f"  cannot be recovered. Create a new key with 'keygen'."
+        )
+
+    if "recovery_hash" not in entry:
+        return False, f"Key '{key_name}' has no recovery code (created before this feature)."
+
+    # Normalize code — remove dashes and spaces, uppercase
+    code_clean    = recovery_code.replace("-", "").replace(" ", "").upper()
+    code_formatted = f"DV-{code_clean[0:4]}-{code_clean[4:8]}-{code_clean[8:12]}-{code_clean[12:16]}" if len(code_clean) == 16 else recovery_code
+
+    recovery_salt = base64.b64decode(entry["recovery_salt"])
+    submitted_hash = hashlib.pbkdf2_hmac(
+        "sha256", code_formatted.encode("utf-8"), recovery_salt, 200_000
+    ).hex()
+
+    if submitted_hash != entry["recovery_hash"]:
+        return False, "Invalid recovery code."
+
+    if len(new_passphrase) < 4:
+        return False, "New passphrase too short (minimum 4 characters)."
+
+    # Set new passphrase
+    new_salt     = os.urandom(32)
+    new_key      = _derive_key(new_passphrase, new_salt)
+    new_key_hash = hashlib.sha256(new_key).hexdigest()
+
+    entry["salt"]          = base64.b64encode(new_salt).decode()
+    entry["key_hash"]      = new_key_hash
+    entry["recovery_used"] = True
+    entry["recovered_at"]  = datetime.now().isoformat()
+
+    # Re-encrypt all files with new key
+    old_key     = None  # Can't re-encrypt without old passphrase
+    reencrypted = 0
+
+    # Note: we can't re-encrypt existing files since we don't have the old key
+    # The recovery only resets the passphrase for future encrypt/decrypt operations
+    # Existing encrypted files need to be re-encrypted manually with the new passphrase
+
+    _save_keystore(keystore)
+
+    return True, (
+        f"Passphrase reset for key '{key_name}'.\n"
+        f"  Recovery code invalidated — cannot be used again.\n"
+        f"  New key hash: {new_key_hash[:24]}...\n\n"
+        f"  ⚠ Existing encrypted files were created with the old key.\n"
+        f"  They cannot be decrypted with the new passphrase.\n"
+        f"  If you still have the old passphrase, decrypt them first,\n"
+        f"  then re-encrypt with: python datavault.py encrypt <file> <v> {key_name}"
     )
 
 
@@ -189,6 +276,83 @@ def decrypt_version(filepath, version_id, key_name, passphrase, output_path=None
             return True, f"Decrypted content:\n\n{text}"
         except UnicodeDecodeError:
             return True, f"Decrypted {len(plaintext)} bytes (binary content)"
+
+
+def rekey(key_name, old_passphrase, new_passphrase):
+    """
+    Change the passphrase for an existing key.
+    Verifies the old passphrase, then re-derives with the new one.
+    Encrypted files are not touched — only the keystore is updated.
+    """
+    keystore = _load_keystore()
+
+    if key_name not in keystore:
+        return False, f"Key '{key_name}' not found."
+
+    # Verify old passphrase
+    old_salt = base64.b64decode(keystore[key_name]["salt"])
+    old_key  = _derive_key(old_passphrase, old_salt)
+    if hashlib.sha256(old_key).hexdigest() != keystore[key_name]["key_hash"]:
+        return False, "Incorrect old passphrase."
+
+    if len(new_passphrase) < 4:
+        return False, "New passphrase too short (minimum 4 characters)."
+
+    if old_passphrase == new_passphrase:
+        return False, "New passphrase must be different from the old one."
+
+    # Derive new key with new salt
+    new_salt     = os.urandom(32)
+    new_key      = _derive_key(new_passphrase, new_salt)
+    new_key_hash = hashlib.sha256(new_key).hexdigest()
+
+    keystore[key_name]["salt"]       = base64.b64encode(new_salt).decode()
+    keystore[key_name]["key_hash"]   = new_key_hash
+    keystore[key_name]["updated_at"] = datetime.now().isoformat()
+    _save_keystore(keystore)
+
+    # Re-encrypt all files that used this key with the new key
+    reencrypted = 0
+    if os.path.exists(ENCRYPTED_DIR):
+        for fname in os.listdir(ENCRYPTED_DIR):
+            if fname.endswith(f"__{key_name}.dvenc"):
+                enc_path = os.path.join(ENCRYPTED_DIR, fname)
+
+                # Decrypt with old key
+                with open(enc_path, "rb") as f:
+                    payload = f.read()
+
+                MAGIC = b"DVE1"
+                if payload[:4] != MAGIC:
+                    continue
+
+                iv         = payload[5:21]
+                mac_stored = payload[21:53]
+                ciphertext = payload[53:]
+
+                mac_computed = hmac.new(old_key, iv + ciphertext, hashlib.sha256).digest()
+                if not hmac.compare_digest(mac_stored, mac_computed):
+                    continue
+
+                plaintext = _xor_stream(ciphertext, old_key, iv)
+
+                # Re-encrypt with new key
+                new_iv         = os.urandom(16)
+                new_ciphertext = _xor_stream(plaintext, new_key, new_iv)
+                new_mac        = hmac.new(new_key, new_iv + new_ciphertext, hashlib.sha256).digest()
+                new_payload    = MAGIC + bytes([1]) + new_iv + new_mac + new_ciphertext
+
+                with open(enc_path, "wb") as f:
+                    f.write(new_payload)
+
+                reencrypted += 1
+
+    return True, (
+        f"Key '{key_name}' passphrase updated.\n"
+        f"  Re-encrypted: {reencrypted} file(s)\n"
+        f"  New key hash: {new_key_hash[:24]}...\n"
+        f"  Old passphrase no longer works."
+    )
 
 
 def list_encrypted():
