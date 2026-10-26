@@ -3,13 +3,18 @@ from setuptools import setup
 setup(
     name="datavault-cli",
     version="1.1.0",
-    description="Cryptographic provenance and version control for AI training datasets",
+    description="Cryptographic provenance for AI training datasets — EU AI Act compliance",
     long_description=open("README.md", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
-    author="Ry Nguyen",
-    author_email="thiminhkhuedao@gmail.com",
+    author="Thi Minh Khuê Dao",
     url="https://github.com/thiminhkhuedao/DataVault",
-    py_modules=["datavault","vault_core","chain","signing","row_tracker","dashboard","pi_bridge","migrate", "audit", "semantic_diff", "freeze", "lineage", "anomaly", "statistical_compare", "watch", "encrypt", "remote_lineage"],
+    py_modules=[
+        "datavault", "vault_core", "chain", "signing",
+        "row_tracker", "dashboard", "pi_bridge", "migrate",
+        "audit", "semantic_diff", "statistical_compare",
+        "anomaly", "lineage", "remote_lineage",
+        "watch", "encrypt", "freeze"
+    ],
     python_requires=">=3.6",
     entry_points={"console_scripts": ["datavault=datavault:main"]},
     classifiers=[
@@ -18,5 +23,5 @@ setup(
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
         "Topic :: Software Development :: Version Control",
     ],
-    keywords="data provenance versioning AI machine-learning CSV sha256",
+    keywords="data provenance versioning AI machine-learning CSV sha256 EU-AI-Act compliance",
 )
