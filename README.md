@@ -119,9 +119,17 @@ python datavault.py remote-links
 # Watch files for unauthorized modifications in real time
 python datavault.py watch training_data.csv
 
-# Encrypt a version
+# Create an encryption key (generates a one-time recovery code)
 python datavault.py keygen alice
+
+# Encrypt a version
 python datavault.py encrypt training_data.csv v3 alice
+
+# Change passphrase
+python datavault.py rekey alice
+
+# Forgot passphrase? Use your recovery code
+python datavault.py recover alice
 
 # Verify the full cryptographic chain
 python datavault.py chain training_data.csv
@@ -190,9 +198,11 @@ python datavault.py export
 | Command | Description |
 |---|---|
 | `watch <file> [--interval N]` | Real-time tamper detection |
-| `keygen <key>` | Create an encryption key |
+| `keygen <key>` | Create an encryption key — generates a one-time recovery code |
 | `encrypt <file> v <key>` | Encrypt a version |
 | `decrypt <file> v <key> [output]` | Decrypt a version |
+| `rekey <key>` | Change passphrase for a key — re-encrypts all files automatically |
+| `recover <key>` | Reset forgotten passphrase using one-time recovery code |
 | `encrypted` | List encrypted versions |
 
 ### Reporting
