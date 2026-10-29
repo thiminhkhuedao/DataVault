@@ -177,8 +177,10 @@ def encrypt_version(filepath, version_id, key_name, passphrase):
     with open(version_path, "rb") as f:
         plaintext = f.read()
 
-    # Encrypt using XSalsa20-style stream cipher (pure Python, no deps)
-    # We use AES-CTR mode implemented with PBKDF2 + HMAC as a stream
+    # Home-made stream cipher: keystream = HMAC-SHA256(key, iv || counter),
+    # XORed with the data, then authenticated with HMAC-SHA256.
+    # NOT AES and NOT independently audited. Fine for local/low-risk data;
+    # the SaaS version must use AES-GCM from the 'cryptography' library.
     iv         = os.urandom(16)
     ciphertext = _xor_stream(plaintext, key, iv)
     mac        = hmac.new(key, iv + ciphertext, hashlib.sha256).digest()
@@ -215,7 +217,7 @@ def encrypt_version(filepath, version_id, key_name, passphrase):
         f"Encrypted '{filename}' {version_id} with key '{key_name}'\n"
         f"  Encrypted file: {enc_path}\n"
         f"  Size:           {file_size} bytes\n"
-        f"  Algorithm:      AES-CTR + HMAC-SHA256 (pure Python)\n"
+        f"  Algorithm:      HMAC-SHA256 keystream (CTR-style) + HMAC-SHA256 MAC, PBKDF2 key\n"
         f"  MAC:            {mac.hex()[:24]}...\n\n"
         f"  The original version is still in .datavault/versions/\n"
         f"  Only '{key_name}' with the correct passphrase can decrypt this."
@@ -394,10 +396,10 @@ def _derive_key(passphrase, salt, iterations=200_000):
 
 def _xor_stream(data, key, iv):
     """
-    CTR-mode stream cipher using PBKDF2 as a PRF.
+    CTR-style stream cipher using HMAC-SHA256 as the PRF (not AES).
     Generates a keystream by hashing key+iv+counter blocks.
     XORs the keystream with data.
-    Not as fast as AES-CTR but requires zero external dependencies.
+    Slower than AES and not independently audited, but needs zero dependencies.
     """
     output    = bytearray(len(data))
     block_size = 32
