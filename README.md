@@ -234,7 +234,7 @@ python datavault.py export
 
 **Watch mode** — continuous real-time monitoring. Alerts immediately on any unauthorized modification.
 
-**Encryption** — encrypt specific versions with PBKDF2-derived keys. Pure Python, no dependencies.
+**Encryption** — encrypt specific versions with a PBKDF2-derived key (200,000 iterations), using an HMAC-SHA256 keystream and an HMAC-SHA256 integrity check. Pure Python, no dependencies. This is a home-made construction, not AES, and has not been independently audited: use it for low-risk data only. The hosted version will use AES-GCM.
 
 ---
 
